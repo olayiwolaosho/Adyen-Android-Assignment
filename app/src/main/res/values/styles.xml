@@ -16,6 +16,7 @@
 
         <!-- Buttons -->
         <item name="buttonStyle">@style/TextAppearance.AppTheme.Button</item>
+
     </style>
 
     <style name="TextAppearance.AppTheme.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
@@ -57,6 +58,10 @@
     <style name="TextAppearance.AppTheme.Button" parent="TextAppearance.MaterialComponents.Button">
         <item name="android:textColor">@color/textColor</item>
         <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="CustomDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@color/on_background</item>
     </style>
 
 </resources>
