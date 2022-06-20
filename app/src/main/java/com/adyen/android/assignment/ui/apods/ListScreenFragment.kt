@@ -1,13 +1,13 @@
 package com.adyen.android.assignment.ui.apods
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.model.AstronomyPicture
 import com.adyen.android.assignment.data.Resource
@@ -23,7 +23,7 @@ class ListScreenFragment : Fragment() {
 
     private lateinit var adapter: ApodsAdapter
 
-    private val viewModel: ApodsViewModel by viewModels()
+    private val viewModel: ApodsViewModel by activityViewModels()
 
     @Inject
     lateinit var dialog: ShowCustomDialog
@@ -40,19 +40,23 @@ class ListScreenFragment : Fragment() {
 
         binding = FragmentListScreenBinding.inflate(inflater, container, false)
 
+        return binding.root
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         initObservers()
 
         initListeners()
 
         initViews()
-
-        return binding.root
-
     }
 
     private fun initViews() {
 
-        //setupAdapter()
+        setupAdapter()
 
         getApods()
 
@@ -62,9 +66,20 @@ class ListScreenFragment : Fragment() {
 
         viewModel.allApods().observe(viewLifecycleOwner,allApodsObserver())
 
+        viewModel.filteredApods().observe(viewLifecycleOwner,filteredApodsObserver())
+
     }
 
     private fun initListeners() {
+
+        binding.reorderList.setOnClickListener {
+
+            val action =
+                ListScreenFragmentDirections.actionListScreenFragmentToReorderFragment()
+
+            findNavController().navigate(action)
+
+        }
 
 
     }
@@ -85,9 +100,8 @@ class ListScreenFragment : Fragment() {
                 Resource.Status.LOADING ->{
 
                     //dialog.showLoading(getString(R.string.getting_apods))
-                    dialog.show(R.layout.loading_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.loading_screen,parentFragmentManager)
 
-                    return@Observer
                 }
 
                 Resource.Status.SUCCESS ->{
@@ -96,19 +110,21 @@ class ListScreenFragment : Fragment() {
 
                     val astronomyPictures = result.data!!
 
-                    //adapter.notifyItemRangeChanged(0,astronomyPictures.size)
+                    adapter.submitList(astronomyPictures)
+
+                    return@Observer
 
                 }
 
                 Resource.Status.ERROR -> {
 
-                    dialog.show(R.layout.error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.error_screen,parentFragmentManager)
 
                 }
 
                 Resource.Status.NO_NETWORK -> {
 
-                    dialog.show(R.layout.network_error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.network_error_screen,parentFragmentManager)
                     //dialog.showNoNetwork()
 
                 }
@@ -119,21 +135,55 @@ class ListScreenFragment : Fragment() {
 
     }
 
-    private fun setupAdapter() {
+    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPicture>>> {
 
-        //val viewModel = binding.viewmodel
+        return Observer { result ->
 
-        if (viewModel != null) {
+            when(result.status){
 
-            adapter = ApodsAdapter()
+                Resource.Status.LOADING ->{
 
-            //binding.billServiceList.adapter = adapter
+                    dialog.showOnFullScreen(R.layout.loading_screen,parentFragmentManager)
 
-        } else {
+                }
 
-            Log.w("ViewModel Error","ViewModel not initialized when attempting to set up adapter.")
+                Resource.Status.SUCCESS ->{
+
+                    dialog.dismiss()
+
+                    val astronomyPictures = result.data!!
+
+                    adapter.submitList(astronomyPictures)
+
+                    return@Observer
+
+                }
+
+                Resource.Status.ERROR -> {
+
+                    dialog.showOnFullScreen(R.layout.error_screen,parentFragmentManager)
+
+                }
+
+                Resource.Status.NO_NETWORK -> {
+
+                    dialog.showOnFullScreen(R.layout.network_error_screen,parentFragmentManager)
+
+                }
+
+            }
 
         }
+
+
+    }
+
+    private fun setupAdapter() {
+
+        adapter = ApodsAdapter()
+
+        binding.recyclerViewApodsList.adapter = adapter
+
     }
 
 }

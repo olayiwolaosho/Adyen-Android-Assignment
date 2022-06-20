@@ -10,9 +10,9 @@ import javax.inject.Inject
 @FragmentScoped
 class ShowCustomDialog @Inject constructor() {
 
-    lateinit var dialog: CustomDialog
+    private lateinit var dialog: CustomDialog
 
-    fun show(layoutId : Int, manager : FragmentManager){
+    fun showOnFullScreen(layoutId : Int, manager : FragmentManager){
 
         dialog = CustomDialog(layoutId)
 
@@ -24,6 +24,14 @@ class ShowCustomDialog @Inject constructor() {
             .add(R.id.nav_host_fragment, dialog)
             .addToBackStack(null)
             .commit()
+
+    }
+
+    fun showAsDialog(layoutId : Int, manager : FragmentManager){
+
+        dialog = CustomDialog(layoutId)
+
+        dialog.show(manager, "dialog")
 
     }
 

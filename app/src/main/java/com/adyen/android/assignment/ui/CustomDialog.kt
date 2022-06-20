@@ -6,14 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
+import com.adyen.android.assignment.R
 
 
 class CustomDialog(
     private val layoutId : Int
 ) : DialogFragment() {
-
-    //lateinit var dialog: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,15 +34,13 @@ class CustomDialog(
         return dialog
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(
+            STYLE_NO_TITLE,
+            android.R.style.Theme_DeviceDefault_Dialog_MinWidth
+        )
+    }
 
-//view: View
 
-    /*override fun dismiss() {
-
-        if(this::dialog.isInitialized){
-
-            dialog.dismiss()
-
-        }
-    }*/
 }

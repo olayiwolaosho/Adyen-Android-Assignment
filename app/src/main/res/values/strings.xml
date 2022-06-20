@@ -8,8 +8,13 @@
     <string name="refresh">Refresh</string>
     <string name="error_description">Please refresh this page and try again</string>
     <string name="oops_something_went_wrong">Oops! Something went wrong.</string>
-    <string name="getting_apods">getting APODs , please wait ...</string>
-    <string name="getting_apods_please_wait">getting APODs , please wait ...</string>
+    <string name="getting_apods">getting APODs , please wait …</string>
+    <string name="getting_apods_please_wait">getting APODs , please wait …</string>
     <string name="our_universe">Our Universe</string>
     <string name="latest">Latest</string>
+    <string name="date">01/01/2022</string>
+    <string name="reorder_list">Reorder list</string>
+    <string name="reorder_by_title">Reorder by title</string>
+    <string name="reorder_by_date">Reorder by date</string>
+    <string name="reset">Reset</string>
 </resources>

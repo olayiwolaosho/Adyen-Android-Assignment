@@ -9,5 +9,26 @@
         android:id="@+id/listScreenFragment"
         android:name="com.adyen.android.assignment.ui.apods.ListScreenFragment"
         android:label="ListScreenFragment"
-        tools:layout="@layout/fragment_list_screen"/>
+        tools:layout="@layout/fragment_list_screen">
+        <action
+            android:id="@+id/action_listScreenFragment_to_apodsDetailFragment"
+            app:destination="@id/apodsDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_listScreenFragment_to_reorderFragment"
+            app:destination="@id/reorderFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/apodsDetailFragment"
+        android:name="com.adyen.android.assignment.ui.apods.ApodsDetailFragment"
+        android:label="fragment_apods_detail"
+        tools:layout="@layout/fragment_apods_detail" />
+    <dialog
+        android:id="@+id/reorderFragment"
+        android:name="com.adyen.android.assignment.ui.apods.ReorderFragment"
+        android:label="ReorderFragment"
+        tools:layout="@layout/fragment_reorder"/>
 </navigation>

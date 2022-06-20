@@ -22,9 +22,17 @@ class ApodsViewModel @Inject constructor(
 
     private var allApods = MutableLiveData<Resource<List<AstronomyPicture>>>()
 
+    private val filteredApods = MutableLiveData<Resource<List<AstronomyPicture>>>()
+
     fun allApods() : MutableLiveData<Resource<List<AstronomyPicture>>>{
 
         return allApods
+
+    }
+
+    fun filteredApods() : MutableLiveData<Resource<List<AstronomyPicture>>>{
+
+        return filteredApods
 
     }
 
@@ -83,6 +91,36 @@ class ApodsViewModel @Inject constructor(
             allApods.value = Resource.error("")
 
         }
+    }
+
+    fun addFilter(sortTag : Int) {
+
+        when(sortTag){
+
+            Constants.TITLE_SORT_TAG -> {
+
+                val sortByTitle = allApods.value?.data
+
+                filteredApods.value = Resource.success(sortByTitle?.sortedBy { it.title })
+
+            }
+
+            Constants.DATE_SORT_TAG -> {
+
+                val sortByDate = allApods.value?.data
+
+                filteredApods.value = Resource.success(sortByDate?.sortedByDescending { it.date })
+
+            }
+
+        }
+
+    }
+
+    fun removeFilter() {
+
+        allApods.value = Resource.success(allApods.value?.data)
+
     }
 
 }
