@@ -9,6 +9,7 @@ import android.view.Window
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.adyen.android.assignment.data.Constants.DATE_SORT_TAG
+import com.adyen.android.assignment.data.Constants.NO_SORT_TAG
 import com.adyen.android.assignment.data.Constants.TITLE_SORT_TAG
 import com.adyen.android.assignment.databinding.FragmentReorderBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,8 +53,6 @@ class ReorderFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initObservers()
-
         initListeners()
 
         initViews()
@@ -61,7 +60,21 @@ class ReorderFragment : DialogFragment() {
 
     private fun initViews() {
 
+        when(viewModel.currentSortTag){
 
+            DATE_SORT_TAG ->{
+
+                binding.radioDate.isChecked = true
+
+            }
+
+            TITLE_SORT_TAG ->{
+
+                binding.radioTitle.isChecked = true
+
+            }
+
+        }
 
     }
 
@@ -85,11 +98,13 @@ class ReorderFragment : DialogFragment() {
             binding.radioTitle.isChecked = false
 
             viewModel.removeFilter()
+
+            dismiss()
         }
 
         binding.buttonApply.setOnClickListener {
 
-            var sortTag = 0
+            var sortTag = NO_SORT_TAG
 
             if(binding.radioDate.isChecked){
 
@@ -105,14 +120,9 @@ class ReorderFragment : DialogFragment() {
 
             viewModel.addFilter(sortTag)
 
-            //dismiss()
+            dismiss()
 
         }
-
-    }
-
-    private fun initObservers() {
-
 
     }
 

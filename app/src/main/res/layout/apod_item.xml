@@ -9,7 +9,7 @@
             type="android.view.View.OnClickListener"/>
         <variable
             name="apods"
-            type="com.adyen.android.assignment.api.model.AstronomyPicture"/>
+            type="com.adyen.android.assignment.api.dao.AstronomyPictureDao"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

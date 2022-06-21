@@ -16,7 +16,11 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right" >
+            <argument
+                android:name="astronomyId"
+                app:argType="integer" />
+        </action>
         <action
             android:id="@+id/action_listScreenFragment_to_reorderFragment"
             app:destination="@id/reorderFragment" />
@@ -25,7 +29,11 @@
         android:id="@+id/apodsDetailFragment"
         android:name="com.adyen.android.assignment.ui.apods.ApodsDetailFragment"
         android:label="fragment_apods_detail"
-        tools:layout="@layout/fragment_apods_detail" />
+        tools:layout="@layout/fragment_apods_detail" >
+        <argument
+            android:name="astronomyId"
+            app:argType="integer" />
+    </fragment>
     <dialog
         android:id="@+id/reorderFragment"
         android:name="com.adyen.android.assignment.ui.apods.ReorderFragment"

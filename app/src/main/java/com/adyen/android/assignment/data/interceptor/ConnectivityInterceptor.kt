@@ -3,6 +3,7 @@ package com.adyen.android.assignment.data.interceptor
 import android.content.Context
 import com.adyen.android.assignment.data.Constants
 import com.adyen.android.assignment.util.NetworkConnectionUtil
+import com.adyen.android.assignment.util.exception.NoConnectivityException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -17,18 +18,10 @@ class ConnectivityInterceptor @Inject constructor(
     Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        //val intent = Intent(Constants.ACTION_TOKEN_EXPIRED)
-        //context.sendBroadcast(intent)
 
         if (!network.isConnectedToInternet()) {
 
-            return Response.Builder()
-                .body(null)
-                .code(Constants.NO_NETWORK_CODE)
-                .message(Constants.NO_NETWORK_MESSAGE)
-                .build()
-
-            //throw NoConnectivityException()
+            throw NoConnectivityException(Constants.NO_NETWORK_MESSAGE)
 
         }
 

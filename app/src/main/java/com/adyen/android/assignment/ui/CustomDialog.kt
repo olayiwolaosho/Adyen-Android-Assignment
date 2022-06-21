@@ -6,13 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
 import com.adyen.android.assignment.R
 
 
 class CustomDialog(
-    private val layoutId : Int
+    private val layoutId : Int = R.layout.loading_screen
 ) : DialogFragment() {
 
     override fun onCreateView(
@@ -41,6 +40,5 @@ class CustomDialog(
             android.R.style.Theme_DeviceDefault_Dialog_MinWidth
         )
     }
-
 
 }

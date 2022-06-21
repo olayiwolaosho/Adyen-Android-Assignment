@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.adyen.android.assignment.R
-import com.adyen.android.assignment.api.model.AstronomyPicture
+import com.adyen.android.assignment.api.dao.AstronomyPictureDao
 import com.adyen.android.assignment.data.Resource
 import com.adyen.android.assignment.databinding.FragmentListScreenBinding
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
@@ -27,11 +27,6 @@ class ListScreenFragment : Fragment() {
 
     @Inject
     lateinit var dialog: ShowCustomDialog
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,9 +59,9 @@ class ListScreenFragment : Fragment() {
 
     private fun initObservers() {
 
-        viewModel.allApods().observe(viewLifecycleOwner,allApodsObserver())
-
         viewModel.filteredApods().observe(viewLifecycleOwner,filteredApodsObserver())
+
+        viewModel.allApods().observe(viewLifecycleOwner,allApodsObserver())
 
     }
 
@@ -91,22 +86,21 @@ class ListScreenFragment : Fragment() {
 
     }
 
-    private fun allApodsObserver(): Observer<Resource<List<AstronomyPicture>>> {
+    private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureDao>>> {
 
         return Observer { result ->
+
+            dialog.dismiss()
 
             when(result.status){
 
                 Resource.Status.LOADING ->{
 
-                    //dialog.showLoading(getString(R.string.getting_apods))
                     dialog.showOnFullScreen(R.layout.loading_screen,parentFragmentManager)
 
                 }
 
                 Resource.Status.SUCCESS ->{
-
-                    dialog.dismiss()
 
                     val astronomyPictures = result.data!!
 
@@ -125,7 +119,6 @@ class ListScreenFragment : Fragment() {
                 Resource.Status.NO_NETWORK -> {
 
                     dialog.showOnFullScreen(R.layout.network_error_screen,parentFragmentManager)
-                    //dialog.showNoNetwork()
 
                 }
 
@@ -135,7 +128,7 @@ class ListScreenFragment : Fragment() {
 
     }
 
-    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPicture>>> {
+    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPictureDao>>> {
 
         return Observer { result ->
 
@@ -148,8 +141,6 @@ class ListScreenFragment : Fragment() {
                 }
 
                 Resource.Status.SUCCESS ->{
-
-                    dialog.dismiss()
 
                     val astronomyPictures = result.data!!
 

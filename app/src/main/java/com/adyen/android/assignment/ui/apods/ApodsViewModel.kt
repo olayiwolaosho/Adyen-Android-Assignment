@@ -3,16 +3,19 @@ package com.adyen.android.assignment.ui.apods
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adyen.android.assignment.api.dao.AstronomyPictureDao
 import com.adyen.android.assignment.api.model.AstronomyPicture
 import com.adyen.android.assignment.data.Constants
 import com.adyen.android.assignment.data.Resource
+import com.adyen.android.assignment.data.SingleLiveEvent
 import com.adyen.android.assignment.data.repo.PlanetaryRepo
+import com.adyen.android.assignment.util.exception.NoConnectivityException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import okhttp3.Response
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,17 +23,19 @@ class ApodsViewModel @Inject constructor(
     private val planetaryRepo : PlanetaryRepo,
 ) : ViewModel() {
 
-    private var allApods = MutableLiveData<Resource<List<AstronomyPicture>>>()
+    var currentSortTag = Constants.NO_SORT_TAG
 
-    private val filteredApods = MutableLiveData<Resource<List<AstronomyPicture>>>()
+    private var allApods = SingleLiveEvent<Resource<List<AstronomyPictureDao>>>()
 
-    fun allApods() : MutableLiveData<Resource<List<AstronomyPicture>>>{
+    private val filteredApods = SingleLiveEvent<Resource<List<AstronomyPictureDao>>>()
+
+    fun allApods() : SingleLiveEvent<Resource<List<AstronomyPictureDao>>>{
 
         return allApods
 
     }
 
-    fun filteredApods() : MutableLiveData<Resource<List<AstronomyPicture>>>{
+    fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureDao>>>{
 
         return filteredApods
 
@@ -38,23 +43,24 @@ class ApodsViewModel @Inject constructor(
 
     fun getApods(){
 
-        allApods.value = Resource.loading()
+        //check filter first
+        if(currentSortTag != Constants.NO_SORT_TAG){
 
-        allApods.value?.data?.let { data ->
+            filteredApods.value = Resource.success(filteredApods.value?.data)
 
-            allApods.value = Resource.success(data)
-
-            return@let
+            return
 
         }
 
-        /*if(allApods.value?.data != null){
+        if(allApods.value?.data != null){
 
             allApods.value = Resource.success(allApods.value?.data)
 
             return
 
-        }*/
+        }
+
+        allApods.value = Resource.loading()
 
         //make api call
         viewModelScope.launch(Dispatchers.Main) {
@@ -65,27 +71,58 @@ class ApodsViewModel @Inject constructor(
 
             }
 
-            val response = planets.await()
+            try {
 
-            if(response.code() == Constants.NO_NETWORK_CODE){
+                val response = planets.await()
+
+                if(response.isSuccessful){
+
+                    val images = response.body()?.filter { data ->
+
+                        data.mediaType == Constants.IMAGE
+
+                    }
+
+                    val imagesDao = mutableListOf<AstronomyPictureDao>()
+
+                    images?.let { allImages ->
+
+                        for (i in allImages.indices) {
+
+                            val astronomyDaoData = AstronomyPictureDao(
+                                i + 1,
+                                allImages[i].serviceVersion,
+                                allImages[i].title,
+                                allImages[i].explanation,
+                                allImages[i].date,
+                                allImages[i].mediaType,
+                                allImages[i].hdUrl,
+                                allImages[i].url,
+                                false
+                            )
+
+                            imagesDao.add(astronomyDaoData)
+                        }
+
+                    }
+
+                    allApods.value = Resource.success(imagesDao)
+
+                    return@launch
+
+                }
+
+            } catch (e: NoConnectivityException) {
 
                 allApods.value = Resource.noNetwork()
 
                 return@launch
             }
+            catch (e: IOException) {
 
-            if(response.isSuccessful){
-
-                val images = response.body()?.filter { data ->
-
-                    data.mediaType == Constants.IMAGE
-
-                }
-
-                allApods.value = Resource.success(images)
+                allApods.value = Resource.error("")
 
                 return@launch
-
             }
 
             allApods.value = Resource.error("")
@@ -103,6 +140,7 @@ class ApodsViewModel @Inject constructor(
 
                 filteredApods.value = Resource.success(sortByTitle?.sortedBy { it.title })
 
+                currentSortTag = Constants.TITLE_SORT_TAG
             }
 
             Constants.DATE_SORT_TAG -> {
@@ -111,6 +149,7 @@ class ApodsViewModel @Inject constructor(
 
                 filteredApods.value = Resource.success(sortByDate?.sortedByDescending { it.date })
 
+                currentSortTag = Constants.DATE_SORT_TAG
             }
 
         }
@@ -118,6 +157,8 @@ class ApodsViewModel @Inject constructor(
     }
 
     fun removeFilter() {
+
+        currentSortTag = Constants.NO_SORT_TAG
 
         allApods.value = Resource.success(allApods.value?.data)
 
