@@ -1,10 +1,8 @@
 package com.adyen.android.assignment.ui.apods
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adyen.android.assignment.api.dao.AstronomyPictureDao
-import com.adyen.android.assignment.api.model.AstronomyPicture
 import com.adyen.android.assignment.data.Constants
 import com.adyen.android.assignment.data.Resource
 import com.adyen.android.assignment.data.SingleLiveEvent

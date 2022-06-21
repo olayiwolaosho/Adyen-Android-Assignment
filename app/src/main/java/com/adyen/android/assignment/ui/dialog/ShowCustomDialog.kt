@@ -1,5 +1,6 @@
 package com.adyen.android.assignment.ui.dialog
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.adyen.android.assignment.R
@@ -12,11 +13,11 @@ class ShowCustomDialog @Inject constructor() {
 
     private lateinit var dialog: CustomDialog
 
-    fun showOnFullScreen(layoutId : Int, manager : FragmentManager){
+    fun showOnFullScreen(layoutId : Int, fragment : Fragment){
 
-        dialog = CustomDialog(layoutId)
+        dialog = CustomDialog(layoutId, fragment)
 
-        val transaction = manager.beginTransaction()
+        val transaction = fragment.parentFragmentManager.beginTransaction()
 
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
@@ -24,14 +25,6 @@ class ShowCustomDialog @Inject constructor() {
             .add(R.id.nav_host_fragment, dialog)
             .addToBackStack(null)
             .commit()
-
-    }
-
-    fun showAsDialog(layoutId : Int, manager : FragmentManager){
-
-        dialog = CustomDialog(layoutId)
-
-        dialog.show(manager, "dialog")
 
     }
 

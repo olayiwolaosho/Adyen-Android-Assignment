@@ -12,12 +12,14 @@ import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.dao.AstronomyPictureDao
 import com.adyen.android.assignment.data.Resource
 import com.adyen.android.assignment.databinding.FragmentListScreenBinding
+import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ListScreenFragment : Fragment() {
+class ListScreenFragment : Fragment(),
+    RefreshListener {
 
     private lateinit var binding: FragmentListScreenBinding
 
@@ -39,14 +41,15 @@ class ListScreenFragment : Fragment() {
 
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
 
         initObservers()
 
         initListeners()
 
         initViews()
+
     }
 
     private fun initViews() {
@@ -96,7 +99,7 @@ class ListScreenFragment : Fragment() {
 
                 Resource.Status.LOADING ->{
 
-                    dialog.showOnFullScreen(R.layout.loading_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.loading_screen,this)
 
                 }
 
@@ -112,13 +115,13 @@ class ListScreenFragment : Fragment() {
 
                 Resource.Status.ERROR -> {
 
-                    dialog.showOnFullScreen(R.layout.error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.error_screen,this)
 
                 }
 
                 Resource.Status.NO_NETWORK -> {
 
-                    dialog.showOnFullScreen(R.layout.network_error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.network_error_screen,this)
 
                 }
 
@@ -136,7 +139,7 @@ class ListScreenFragment : Fragment() {
 
                 Resource.Status.LOADING ->{
 
-                    dialog.showOnFullScreen(R.layout.loading_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.loading_screen,this)
 
                 }
 
@@ -152,13 +155,13 @@ class ListScreenFragment : Fragment() {
 
                 Resource.Status.ERROR -> {
 
-                    dialog.showOnFullScreen(R.layout.error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.error_screen,this)
 
                 }
 
                 Resource.Status.NO_NETWORK -> {
 
-                    dialog.showOnFullScreen(R.layout.network_error_screen,parentFragmentManager)
+                    dialog.showOnFullScreen(R.layout.network_error_screen,this)
 
                 }
 
@@ -174,6 +177,12 @@ class ListScreenFragment : Fragment() {
         adapter = ApodsAdapter()
 
         binding.recyclerViewApodsList.adapter = adapter
+
+    }
+
+    override fun refresh() {
+
+        getApods()
 
     }
 
