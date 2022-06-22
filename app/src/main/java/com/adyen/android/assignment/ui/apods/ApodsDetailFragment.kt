@@ -83,6 +83,8 @@ class ApodsDetailFragment : Fragment() {
 
             astronomyData.favourite = !astronomyData.favourite
 
+            viewModel.addFavourite(astronomyData.id - 1)
+
         }
 
     }

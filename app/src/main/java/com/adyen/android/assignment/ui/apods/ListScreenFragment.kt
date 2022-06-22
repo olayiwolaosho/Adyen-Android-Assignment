@@ -25,6 +25,8 @@ class ListScreenFragment : Fragment(),
 
     private lateinit var adapter: ApodsAdapter
 
+    private lateinit var favouritesAdapter: FavouriteApodsAdapter
+
     private val viewModel: ApodsViewModel by activityViewModels()
 
     @Inject
@@ -65,6 +67,8 @@ class ListScreenFragment : Fragment(),
         viewModel.filteredApods().observe(viewLifecycleOwner,filteredApodsObserver())
 
         viewModel.allApods().observe(viewLifecycleOwner,allApodsObserver())
+
+        viewModel.favouriteApods().observe(viewLifecycleOwner,favouriteApodsObserver())
 
     }
 
@@ -169,6 +173,53 @@ class ListScreenFragment : Fragment(),
 
         }
 
+    }
+
+    private fun favouriteApodsObserver(): Observer<Resource<MutableList<AstronomyPictureDao>>> {
+
+        return Observer { result ->
+
+            when(result.status){
+
+                Resource.Status.LOADING ->{
+
+                }
+
+                Resource.Status.SUCCESS ->{
+
+                    val favouriteAstronomyPictures = result.data!!
+
+                    if(favouriteAstronomyPictures.isEmpty()){
+
+                        binding.textViewFavourite.visibility = View.GONE
+
+                        binding.recyclerViewFavouriteList.visibility = View.GONE
+
+                        return@Observer
+                    }
+
+                    favouritesAdapter.submitList(favouriteAstronomyPictures)
+
+                    binding.textViewFavourite.visibility = View.VISIBLE
+
+                    binding.recyclerViewFavouriteList.visibility = View.VISIBLE
+
+                    return@Observer
+
+                }
+
+                Resource.Status.ERROR -> {
+
+                }
+
+                Resource.Status.NO_NETWORK -> {
+
+                }
+
+            }
+
+        }
+
 
     }
 
@@ -176,7 +227,11 @@ class ListScreenFragment : Fragment(),
 
         adapter = ApodsAdapter()
 
+        favouritesAdapter = FavouriteApodsAdapter()
+
         binding.recyclerViewApodsList.adapter = adapter
+
+        binding.recyclerViewFavouriteList.adapter = favouritesAdapter
 
     }
 
