@@ -2,11 +2,12 @@ package com.adyen.android.assignment.ui.apods
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.adyen.android.assignment.api.dao.AstronomyPictureDao
 import com.adyen.android.assignment.api.model.AstronomyPicture
-import com.adyen.android.assignment.data.Constants
-import com.adyen.android.assignment.data.Resource
-import com.adyen.android.assignment.data.SingleLiveEvent
+import com.adyen.android.assignment.data.*
+import com.adyen.android.assignment.data.db.AstronomyPictureEnt
+import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
+import com.adyen.android.assignment.data.extensions.toAstronomyPictureEnt
+import com.adyen.android.assignment.data.extensions.toFavouritePictureEnt
 import com.adyen.android.assignment.data.repo.PlanetaryRepo
 import com.adyen.android.assignment.util.exception.NoConnectivityException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,51 +21,90 @@ class ApodsViewModel @Inject constructor(
     private val planetaryRepo : PlanetaryRepo,
 ) : ViewModel() {
 
-    var currentSortTag = Constants.NO_SORT_TAG
+    var currentSortTag = NO_SORT_TAG
 
-    private var allApods = SingleLiveEvent<Resource<List<AstronomyPictureDao>>>()
+    private var allApods = SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>()
 
-    private val filteredApods = SingleLiveEvent<Resource<List<AstronomyPictureDao>>>()
+    private val filteredApods = SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>()
 
-    private val favouriteApods = SingleLiveEvent<Resource<MutableList<AstronomyPictureDao>>>()
+    private val favouriteApods = SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>()
 
-    fun allApods() : SingleLiveEvent<Resource<List<AstronomyPictureDao>>>{
+    fun allApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
 
         return allApods
 
     }
 
-    fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureDao>>>{
+    fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
 
         return filteredApods
 
     }
 
-    fun favouriteApods() : SingleLiveEvent<Resource<MutableList<AstronomyPictureDao>>>{
+    fun favouriteApods() : SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>{
 
         return favouriteApods
 
     }
 
-    fun getApods(){
+    fun isApodsAvailable() : Boolean{
 
         //get all favourite apods
         getFavouriteApods()
 
-        //check filter first
-        if(filterApods()) return
+        //check if we have data in our liveEvents so we that instead of calling api or db
+        if(filterApods() || getAllApods()){
+            return true
+        }
 
-        //get all apods if no filter
-        if(getAllApods()) return
+        return false
+
+    }
+
+    fun getApods(){
+
+        if(isApodsAvailable()) return
 
         allApods.value = Resource.loading()
 
-        getApodsFromService()
+        viewModelScope.launch(Dispatchers.Main) {
+
+            getApodsFromService()
+
+        }
+    }
+
+    fun getApodsFromDb(){
+
+        if(isApodsAvailable()) return
+
+        allApods.value = Resource.loading()
+
+        viewModelScope.launch(Dispatchers.Main) {
+
+            val favouriteApodsFromDb : MutableList<FavouriteAstronomyPictureEnt> = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+
+                planetaryRepo.getFavouritePicturesFromDB()
+
+            }
+
+            val apodsFromDb : List<AstronomyPictureEnt> = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+
+                planetaryRepo.getPicturesFromDB()
+
+            }
+
+            favouriteApods.value = Resource.success(favouriteApodsFromDb)
+
+            allApods.value = Resource.success(apodsFromDb)
+
+        }
+
     }
 
     fun filterApods() : Boolean{
 
-        if(currentSortTag != Constants.NO_SORT_TAG){
+        if(currentSortTag != NO_SORT_TAG){
 
             filteredApods.value = Resource.success(filteredApods.value?.data)
 
@@ -100,78 +140,89 @@ class ApodsViewModel @Inject constructor(
 
     }
 
-    fun getApodsFromService(){
-
+    suspend fun getApodsFromService(){
         //make api call
-        viewModelScope.launch(Dispatchers.Main) {
-            try {
-                val response = getApodResponse().await()
+        try {
 
-                if(response.isSuccessful){
+            val response = getApodResponse()
 
-                    val images = response.body()?.filter { data ->
+            if(response.isSuccessful){
 
-                        data.mediaType == Constants.IMAGE
+                val images = getImagesFromResponse(response.body())
 
-                    }
+                images?.let {
 
-                    val imagesDao = mutableListOf<AstronomyPictureDao>()
+                    withContext(CoroutineScope(Dispatchers.IO).coroutineContext
+                    ) {
 
-                    images?.let { allImages ->
-
-                        for (i in allImages.indices) {
-
-                            val astronomyDaoData = AstronomyPictureDao(
-                                i + 1,
-                                allImages[i].serviceVersion,
-                                allImages[i].title,
-                                allImages[i].explanation,
-                                allImages[i].date,
-                                allImages[i].mediaType,
-                                allImages[i].hdUrl,
-                                allImages[i].url,
-                                false
-                            )
-
-                            imagesDao.add(astronomyDaoData)
-                        }
+                        //remove appPictures from db before adding new data
+                        planetaryRepo.removeAllPictureFromDB()
 
                     }
 
-                    favouriteApods.value = Resource.success(imagesDao.filter { favourite -> favourite.favourite }.toMutableList())
+                    val result : MutableList<FavouriteAstronomyPictureEnt> = CoroutineScope(Dispatchers.IO).async{
 
-                    allApods.value = Resource.success(imagesDao)
+                        //add images to db this represents allApods
+                        planetaryRepo.addAllPicturesToDb(images)
 
-                    return@launch
+                        planetaryRepo.getFavouritePicturesFromDB()
+
+                    }.await()
+
+                    val imagesFromDb : List<AstronomyPictureEnt> = CoroutineScope(Dispatchers.IO).async{
+
+                        planetaryRepo.getPicturesFromDB()
+
+                    }.await()
+
+                    favouriteApods.value = Resource.success(result)
+
+                    allApods.value = Resource.success(imagesFromDb)
 
                 }
 
-            } catch (e: NoConnectivityException) {
+                return
 
-                allApods.value = Resource.noNetwork()
-
-                return@launch
             }
-            catch (e: IOException) {
 
-                allApods.value = Resource.error("")
+        } catch (e: NoConnectivityException) {
 
-                return@launch
-            }
+            allApods.value = Resource.noNetwork()
+
+            return
+        }
+        catch (e: IOException) {
 
             allApods.value = Resource.error("")
+
+            return
+        }
+
+        allApods.value = Resource.error("")
+
+    }
+
+    fun getImagesFromResponse(responseBody : List<AstronomyPicture>?) : List<AstronomyPictureEnt>?{
+
+        return  responseBody?.filter { data ->
+
+            data.mediaType == IMAGE
+
+        }?.map { astronomyPic ->
+
+            astronomyPic.toAstronomyPictureEnt()
 
         }
 
     }
 
-    suspend fun getApodResponse(): Deferred<Response<List<AstronomyPicture>>> {
+    suspend fun getApodResponse(): Response<List<AstronomyPicture>> {
 
         return CoroutineScope(Dispatchers.IO).async{
 
             return@async planetaryRepo.getPictures()
 
-        }
+        }.await()
 
     }
 
@@ -179,22 +230,22 @@ class ApodsViewModel @Inject constructor(
 
         when(sortTag){
 
-            Constants.TITLE_SORT_TAG -> {
+            TITLE_SORT_TAG -> {
 
                 val sortByTitle = allApods.value?.data
 
                 filteredApods.value = Resource.success(sortByTitle?.sortedBy { it.title })
 
-                currentSortTag = Constants.TITLE_SORT_TAG
+                currentSortTag = TITLE_SORT_TAG
             }
 
-            Constants.DATE_SORT_TAG -> {
+            DATE_SORT_TAG -> {
 
                 val sortByDate = allApods.value?.data
 
                 filteredApods.value = Resource.success(sortByDate?.sortedByDescending { it.date })
 
-                currentSortTag = Constants.DATE_SORT_TAG
+                currentSortTag = DATE_SORT_TAG
             }
 
         }
@@ -203,22 +254,39 @@ class ApodsViewModel @Inject constructor(
 
     fun addFavourite(astronomyPictureId : Int) {
 
-        val favouriteData = allApods.value?.data?.get(astronomyPictureId)
+        viewModelScope.launch(Dispatchers.Main) {
 
-        favouriteData?.let { favourite ->
+            val favouriteData = allApods.value?.data?.get(astronomyPictureId)
 
-            if(favourite.favourite){
+            favouriteData?.toFavouritePictureEnt()?.let { favourite ->
 
-                favouriteApods.value?.data?.add(FIRST_INDEX,favourite)
+                if(favourite.favourite){
+
+                    withContext(Dispatchers.IO) {
+
+                        planetaryRepo.addFavouritePictureToDB(favourite)
+
+                    }
+
+
+                    favouriteApods.value?.data?.add(FIRST_INDEX,favourite)
+
+                }
+                else{
+
+                    withContext(Dispatchers.IO) {
+
+                        planetaryRepo.removeFavouritePictureFromDB(favourite)
+
+                    }
+
+                    favouriteApods.value?.data?.remove(favourite)
+
+                }
+
+                favouriteApods.value = Resource.success(favouriteApods.value?.data)
 
             }
-            else{
-
-                favouriteApods.value?.data?.remove(favourite)
-
-            }
-
-            favouriteApods.value = Resource.success(favouriteApods.value?.data)
 
         }
 
@@ -226,7 +294,7 @@ class ApodsViewModel @Inject constructor(
 
     fun removeFilter() {
 
-        currentSortTag = Constants.NO_SORT_TAG
+        currentSortTag = NO_SORT_TAG
 
         allApods.value = Resource.success(allApods.value?.data)
 

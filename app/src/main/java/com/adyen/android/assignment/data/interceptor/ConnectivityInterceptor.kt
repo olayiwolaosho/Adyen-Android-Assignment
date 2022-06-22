@@ -1,10 +1,8 @@
 package com.adyen.android.assignment.data.interceptor
 
-import android.content.Context
-import com.adyen.android.assignment.data.Constants
+import com.adyen.android.assignment.data.NO_NETWORK_MESSAGE
 import com.adyen.android.assignment.util.NetworkConnectionUtil
 import com.adyen.android.assignment.util.exception.NoConnectivityException
-import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
@@ -21,7 +19,7 @@ class ConnectivityInterceptor @Inject constructor(
 
         if (!network.isConnectedToInternet()) {
 
-            throw NoConnectivityException(Constants.NO_NETWORK_MESSAGE)
+            throw NoConnectivityException(NO_NETWORK_MESSAGE)
 
         }
 

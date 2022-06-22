@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import com.adyen.android.assignment.data.Constants.DATE_SORT_TAG
-import com.adyen.android.assignment.data.Constants.NO_SORT_TAG
-import com.adyen.android.assignment.data.Constants.TITLE_SORT_TAG
+import com.adyen.android.assignment.data.DATE_SORT_TAG
+import com.adyen.android.assignment.data.NO_SORT_TAG
+import com.adyen.android.assignment.data.TITLE_SORT_TAG
 import com.adyen.android.assignment.databinding.FragmentReorderBinding
 import dagger.hilt.android.AndroidEntryPoint
 

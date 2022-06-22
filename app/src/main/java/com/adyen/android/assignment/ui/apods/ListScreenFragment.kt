@@ -9,12 +9,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.adyen.android.assignment.R
-import com.adyen.android.assignment.api.dao.AstronomyPictureDao
+import com.adyen.android.assignment.SharedPreferenceManager
+import com.adyen.android.assignment.data.DATE_TODAY
 import com.adyen.android.assignment.data.Resource
+import com.adyen.android.assignment.data.db.AstronomyPictureEnt
+import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
 import com.adyen.android.assignment.databinding.FragmentListScreenBinding
 import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDate
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -28,6 +33,9 @@ class ListScreenFragment : Fragment(),
     private lateinit var favouritesAdapter: FavouriteApodsAdapter
 
     private val viewModel: ApodsViewModel by activityViewModels()
+
+    @Inject
+    lateinit var prefManager : SharedPreferenceManager
 
     @Inject
     lateinit var dialog: ShowCustomDialog
@@ -59,7 +67,6 @@ class ListScreenFragment : Fragment(),
         setupAdapter()
 
         getApods()
-
     }
 
     private fun initObservers() {
@@ -89,11 +96,19 @@ class ListScreenFragment : Fragment(),
 
     private fun getApods() {
 
-        viewModel.getApods()
+        if(prefManager.getStringItem(DATE_TODAY) == LocalDate.now().toString()){
 
+            viewModel.getApodsFromDb()
+
+        }
+        else{
+
+            viewModel.getApods()
+
+        }
     }
 
-    private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureDao>>> {
+    private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
 
         return Observer { result ->
 
@@ -109,6 +124,12 @@ class ListScreenFragment : Fragment(),
 
                 Resource.Status.SUCCESS ->{
 
+                    if(prefManager.getStringItem(DATE_TODAY) != LocalDate.now().toString()){
+
+                        prefManager.saveItem(DATE_TODAY,LocalDate.now().toString())
+
+                    }
+
                     val astronomyPictures = result.data!!
 
                     adapter.submitList(astronomyPictures)
@@ -135,7 +156,7 @@ class ListScreenFragment : Fragment(),
 
     }
 
-    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPictureDao>>> {
+    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
 
         return Observer { result ->
 
@@ -175,7 +196,7 @@ class ListScreenFragment : Fragment(),
 
     }
 
-    private fun favouriteApodsObserver(): Observer<Resource<MutableList<AstronomyPictureDao>>> {
+    private fun favouriteApodsObserver(): Observer<Resource<MutableList<FavouriteAstronomyPictureEnt>>> {
 
         return Observer { result ->
 
@@ -219,7 +240,6 @@ class ListScreenFragment : Fragment(),
             }
 
         }
-
 
     }
 

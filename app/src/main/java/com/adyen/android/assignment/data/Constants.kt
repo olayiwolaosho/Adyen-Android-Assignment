@@ -1,18 +1,23 @@
 package com.adyen.android.assignment.data
 
-object Constants {
+const val DATABASE_NAME = "adyen-db"
 
-    const val NO_NETWORK_MESSAGE = "No Network Connection"
+const val SHARED_PREFERENCE_FILE_NAME = "app-preferences"
 
-    const val NO_NETWORK_CODE = 505
+const val NO_NETWORK_MESSAGE = "No Network Connection"
 
-    const val IMAGE = "image"
+const val DATE_TODAY = "DATE_TODAY"
 
-    const val NO_SORT_TAG = 0
+const val MAIN_LIST = "MAIN_LIST"
 
-    const val TITLE_SORT_TAG = 1
+const val FAVOURITE_LIST = "FAVOURITE_LIST"
 
-    const val DATE_SORT_TAG = 2
+const val NO_NETWORK_CODE = 505
 
+const val IMAGE = "image"
 
-}
+const val NO_SORT_TAG = 0
+
+const val TITLE_SORT_TAG = 1
+
+const val DATE_SORT_TAG = 2

@@ -7,10 +7,11 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.adyen.android.assignment.api.dao.AstronomyPictureDao
+import com.adyen.android.assignment.data.MAIN_LIST
+import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.databinding.ApodItemBinding
 
-class ApodsAdapter : ListAdapter<AstronomyPictureDao, RecyclerView.ViewHolder>(ApodsDiffCallback()) {
+class ApodsAdapter : ListAdapter<AstronomyPictureEnt, RecyclerView.ViewHolder>(ApodsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ApodsViewHolder(
@@ -41,17 +42,18 @@ class ApodsAdapter : ListAdapter<AstronomyPictureDao, RecyclerView.ViewHolder>(A
         }
 
         private fun navigateToDetails(
-            astronomyData : AstronomyPictureDao,
+            astronomyData : AstronomyPictureEnt,
             view: View
         ) {
             val direction =
                 ListScreenFragmentDirections.actionListScreenFragmentToApodsDetailFragment(
-                    astronomyData.id
+                    astronomyData.id,
+                    MAIN_LIST
                 )
             view.findNavController().navigate(direction)
         }
 
-        fun bind(item: AstronomyPictureDao) {
+        fun bind(item: AstronomyPictureEnt) {
             binding.apply {
                 apods = item
                 executePendingBindings()
@@ -60,13 +62,13 @@ class ApodsAdapter : ListAdapter<AstronomyPictureDao, RecyclerView.ViewHolder>(A
     }
 }
 
-class ApodsDiffCallback : DiffUtil.ItemCallback<AstronomyPictureDao>() {
+class ApodsDiffCallback : DiffUtil.ItemCallback<AstronomyPictureEnt>() {
 
-    override fun areItemsTheSame(oldItem: AstronomyPictureDao, newItem: AstronomyPictureDao): Boolean {
+    override fun areItemsTheSame(oldItem: AstronomyPictureEnt, newItem: AstronomyPictureEnt): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: AstronomyPictureDao, newItem: AstronomyPictureDao): Boolean {
+    override fun areContentsTheSame(oldItem: AstronomyPictureEnt, newItem: AstronomyPictureEnt): Boolean {
         return oldItem == newItem
     }
 }
