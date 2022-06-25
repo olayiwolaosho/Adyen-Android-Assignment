@@ -19,7 +19,6 @@ import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
