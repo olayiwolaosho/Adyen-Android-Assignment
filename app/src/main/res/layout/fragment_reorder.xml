@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<layout xmlns:tools="http://schemas.android.com/tools"
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
@@ -57,7 +57,7 @@
             android:layout_marginHorizontal="20dp"
             android:background="@drawable/network_btn"
             android:fontFamily="@font/roboto_regular"
-            android:text="Apply"
+            android:text="@string/apply"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"

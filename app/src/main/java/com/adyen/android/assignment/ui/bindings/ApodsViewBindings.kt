@@ -1,6 +1,5 @@
 package com.adyen.android.assignment.ui.bindings
 
-import android.view.View
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.adyen.android.assignment.util.Globals

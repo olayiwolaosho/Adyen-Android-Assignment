@@ -2,12 +2,7 @@ package com.adyen.android.assignment.api
 
 import com.adyen.android.assignment.BuildConfig
 import com.adyen.android.assignment.api.model.AstronomyPicture
-import com.adyen.android.assignment.api.model.DayAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
 

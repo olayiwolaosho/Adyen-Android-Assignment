@@ -16,7 +16,6 @@ import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
 import com.adyen.android.assignment.data.extensions.loadImage
 import com.adyen.android.assignment.databinding.FragmentApodsDetailBinding
-import com.adyen.android.assignment.ui.bindings.bindImageFromUrl
 import com.adyen.android.assignment.util.Globals
 
 class ApodsDetailFragment : Fragment() {

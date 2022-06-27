@@ -160,20 +160,23 @@ class ApodsViewModel @Inject constructor(
 
                     }
 
-                    val result : MutableList<FavouriteAstronomyPictureEnt> = CoroutineScope(Dispatchers.IO).async{
+                    val result : MutableList<FavouriteAstronomyPictureEnt> = withContext(
+                            CoroutineScope(Dispatchers.IO).coroutineContext
+                        ) {
 
-                        //add images to db this represents allApods
-                        planetaryRepo.addAllPicturesToDb(images)
+                            //add images to db this represents allApods
+                            planetaryRepo.addAllPicturesToDb(images)
 
-                        planetaryRepo.getFavouritePicturesFromDB()
+                            planetaryRepo.getFavouritePicturesFromDB()
 
-                    }.await()
+                        }
 
-                    val imagesFromDb : List<AstronomyPictureEnt> = CoroutineScope(Dispatchers.IO).async{
+                    val imagesFromDb : List<AstronomyPictureEnt> = withContext(
+                        CoroutineScope(Dispatchers.IO).coroutineContext) {
 
-                        planetaryRepo.getPicturesFromDB()
+                            planetaryRepo.getPicturesFromDB()
 
-                    }.await()
+                        }
 
                     favouriteApods.value = Resource.success(result)
 

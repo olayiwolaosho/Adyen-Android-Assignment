@@ -7,7 +7,6 @@ import com.adyen.android.assignment.TestServiceGenerator
 import com.adyen.android.assignment.api.PlanetaryService
 import com.adyen.android.assignment.data.*
 import com.adyen.android.assignment.data.db.AstronomyPictureDao
-import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
 import com.adyen.android.assignment.data.repo.PlanetaryRepoImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi

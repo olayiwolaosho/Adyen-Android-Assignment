@@ -12,8 +12,6 @@ const val MAIN_LIST = "MAIN_LIST"
 
 const val FAVOURITE_LIST = "FAVOURITE_LIST"
 
-const val NO_NETWORK_CODE = 505
-
 const val IMAGE = "image"
 
 const val NO_SORT_TAG = 0

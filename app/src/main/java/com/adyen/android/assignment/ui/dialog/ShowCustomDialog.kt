@@ -1,7 +1,6 @@
 package com.adyen.android.assignment.ui.dialog
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.ui.CustomDialog

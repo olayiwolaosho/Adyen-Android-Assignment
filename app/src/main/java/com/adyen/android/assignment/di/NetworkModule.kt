@@ -1,7 +1,6 @@
 package com.adyen.android.assignment.di
 
 import com.adyen.android.assignment.BuildConfig
-import com.adyen.android.assignment.api.PlanetaryService
 import com.adyen.android.assignment.api.model.DayAdapter
 import com.adyen.android.assignment.data.interceptor.ConnectivityInterceptor
 import com.squareup.moshi.Moshi
