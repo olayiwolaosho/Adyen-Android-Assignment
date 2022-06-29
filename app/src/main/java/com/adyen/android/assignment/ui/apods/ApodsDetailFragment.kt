@@ -55,7 +55,7 @@ class ApodsDetailFragment : Fragment() {
 
             MAIN_LIST -> {
 
-                viewModel.allApods().value?.data?.let { apodData ->
+                viewModel.allApodsState.value.data?.let { apodData ->
 
                     astronomyData = apodData.first {  it.id == args.astronomyId }
 

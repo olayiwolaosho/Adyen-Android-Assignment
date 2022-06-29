@@ -12,6 +12,10 @@ const val MAIN_LIST = "MAIN_LIST"
 
 const val FAVOURITE_LIST = "FAVOURITE_LIST"
 
+const val ADD_FAVOURITE = "FAVOURITE_ADDED"
+
+const val REMOVE_FAVOURITE = "FAVOURITE_REMOVED"
+
 const val IMAGE = "image"
 
 const val NO_SORT_TAG = 0

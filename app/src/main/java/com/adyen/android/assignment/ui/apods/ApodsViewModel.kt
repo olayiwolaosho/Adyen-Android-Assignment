@@ -90,7 +90,7 @@ class ApodsViewModel @Inject constructor(
 
                 when (state.status) {
 
-                    Resource.Status.EMPTY -> {
+                    Resource.Status.LOADING -> {
 
                         _allApodsState.value = Resource.loading()
 
@@ -150,92 +150,43 @@ class ApodsViewModel @Inject constructor(
 
     suspend fun getApodsFromService(){
         //make api call
-        try {
+        planetaryRepo.getPictures().collect { state ->
 
-            val response = getApodResponse()
+            when (state.status) {
 
-            if(response.isSuccessful){
+                Resource.Status.LOADING -> {
 
-                val images = getImagesFromResponse(response.body())
-
-                images?.let {
-
-                    withContext(CoroutineScope(Dispatchers.IO).coroutineContext
-                    ) {
-
-                        //remove appPictures from db before adding new data
-                        planetaryRepo.removeAllPictureFromDB()
-
-                    }
-
-                    val result : MutableList<FavouriteAstronomyPictureEnt> = withContext(
-                            CoroutineScope(Dispatchers.IO).coroutineContext
-                        ) {
-
-                            //add images to db this represents allApods
-                            planetaryRepo.addAllPicturesToDb(images)
-
-                            planetaryRepo.getFavouritePicturesFromDB()
-
-                        }
-
-                    val imagesFromDb : List<AstronomyPictureEnt> = withContext(
-                        CoroutineScope(Dispatchers.IO).coroutineContext) {
-
-                            planetaryRepo.getPicturesFromDB()
-
-                        }
-
-                    favouriteApods.value = Resource.success(result)
-
-                    allApods.value = Resource.success(imagesFromDb)
+                    _allApodsState.value = Resource.loading()
 
                 }
 
-                return
+                Resource.Status.NO_NETWORK -> {
+
+                    _allApodsState.value = Resource.noNetwork()
+
+                }
+
+                Resource.Status.ERROR -> {
+
+                    _allApodsState.value = Resource.error("")
+
+                }
+
+                Resource.Status.SUCCESS -> {
+
+                    //favouriteApods.value = Resource.success(result)
+
+                    //allApods.value = Resource.success(imagesFromDb)
+
+                    _allApodsState.value = Resource.success(state.data)
+
+                }
 
             }
-
-        } catch (e: NoConnectivityException) {
-
-            allApods.value = Resource.noNetwork()
-
-            return
-        }
-        catch (e: IOException) {
-
-            allApods.value = Resource.error("")
-
-            return
-        }
-
-        allApods.value = Resource.error("")
-
-    }
-
-    fun getImagesFromResponse(responseBody : List<AstronomyPicture>?) : List<AstronomyPictureEnt>?{
-
-        return  responseBody?.filter { data ->
-
-            data.mediaType == IMAGE
-
-        }?.map { astronomyPic ->
-
-            astronomyPic.toAstronomyPictureEnt()
-
         }
 
     }
 
-    suspend fun getApodResponse(): Response<List<AstronomyPicture>> {
-
-        return CoroutineScope(Dispatchers.IO).async{
-
-            return@async planetaryRepo.getPictures()
-
-        }.await()
-
-    }
 
     fun addFilter(sortTag : Int) {
 
@@ -271,31 +222,36 @@ class ApodsViewModel @Inject constructor(
 
             favouriteData?.toFavouritePictureEnt()?.let { favourite ->
 
-                if(favourite.favourite){
 
-                    withContext(Dispatchers.IO) {
+                planetaryRepo.editFavourite(favourite).collect{ response ->
 
-                        planetaryRepo.addFavouritePictureToDB(favourite)
+                    when(response.status){
+
+                        Resource.Status.SUCCESS -> {
+
+                            if(response.data == ADD_FAVOURITE){
+
+                                favouriteApods.value?.data?.add(FIRST_INDEX,favourite)
+
+                            }
+                            else{
+
+                                favouriteApods.value?.data?.remove(favourite)
+
+                            }
+
+                            favouriteApods.value = Resource.success(favouriteApods.value?.data)
+
+                        }
+                        else -> {
+
+                            favouriteApods.value = Resource.success(favouriteApods.value?.data)
+
+                        }
 
                     }
 
-
-                    favouriteApods.value?.data?.add(FIRST_INDEX,favourite)
-
                 }
-                else{
-
-                    withContext(Dispatchers.IO) {
-
-                        planetaryRepo.removeFavouritePictureFromDB(favourite)
-
-                    }
-
-                    favouriteApods.value?.data?.remove(favourite)
-
-                }
-
-                favouriteApods.value = Resource.success(favouriteApods.value?.data)
 
             }
 
