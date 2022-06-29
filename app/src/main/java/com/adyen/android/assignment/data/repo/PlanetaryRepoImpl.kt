@@ -2,15 +2,23 @@ package com.adyen.android.assignment.data.repo
 
 import com.adyen.android.assignment.api.PlanetaryService
 import com.adyen.android.assignment.api.model.AstronomyPicture
+import com.adyen.android.assignment.data.Resource
 import com.adyen.android.assignment.data.db.AstronomyPictureDao
 import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
+import com.adyen.android.assignment.ui.UiState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import okhttp3.Dispatcher
 import retrofit2.Response
 import javax.inject.Inject
 
 class PlanetaryRepoImpl @Inject constructor(
     private val planetaryService : PlanetaryService,
-    private val astronomyPictureDao: AstronomyPictureDao
+    private val planetaryDbRepo: PlanetaryDbRepo
 ) : PlanetaryRepo {
 
     override suspend fun getPictures(): Response<List<AstronomyPicture>> {
@@ -19,39 +27,19 @@ class PlanetaryRepoImpl @Inject constructor(
 
     }
 
-    override fun addAllPicturesToDb(allPictures : List<AstronomyPictureEnt>) {
+    override suspend fun getApodsUiState(): Flow<Resource<List<AstronomyPictureEnt>>> {
 
-        astronomyPictureDao.insertAll(*allPictures.toTypedArray())
+        return flow {
 
-    }
+            emit(Resource.loading())
 
-    override fun getPicturesFromDB(): List<AstronomyPictureEnt> {
+            planetaryDbRepo.getPicturesFromDB().collectLatest { latest ->
 
-        return astronomyPictureDao.getAll()
+                emit(Resource.success(latest))
 
-    }
+            }
 
-    override fun getFavouritePicturesFromDB(): MutableList<FavouriteAstronomyPictureEnt> {
-
-        return astronomyPictureDao.getAllFavourites()
-
-    }
-
-    override fun addFavouritePictureToDB(favouriteAstronomyPicture : FavouriteAstronomyPictureEnt) {
-
-        astronomyPictureDao.insert(favouriteAstronomyPicture)
-
-    }
-
-    override fun removeFavouritePictureFromDB(favouriteAstronomyPicture : FavouriteAstronomyPictureEnt) {
-
-        astronomyPictureDao.deleteFavourite(favouriteAstronomyPicture)
-
-    }
-
-    override suspend fun removeAllPictureFromDB() {
-
-        astronomyPictureDao.deleteAll()
+        }.flowOn(Dispatchers.IO)
 
     }
 

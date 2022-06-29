@@ -9,9 +9,14 @@ import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
 import com.adyen.android.assignment.data.extensions.toAstronomyPictureEnt
 import com.adyen.android.assignment.data.extensions.toFavouritePictureEnt
 import com.adyen.android.assignment.data.repo.PlanetaryRepo
+import com.adyen.android.assignment.ui.UiState
 import com.adyen.android.assignment.util.exception.NoConnectivityException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import retrofit2.Response
 import java.io.IOException
 import javax.inject.Inject
@@ -21,6 +26,12 @@ class ApodsViewModel @Inject constructor(
     private val planetaryRepo : PlanetaryRepo,
 ) : ViewModel() {
 
+    // Backing property to avoid state updates from other classes
+    private val _allApodsState = MutableStateFlow<Resource<List<AstronomyPictureEnt>>>(Resource.empty())
+
+    // The UI collects from this StateFlow to get its state updates
+    val allApodsState: StateFlow<Resource<List<AstronomyPictureEnt>>> = _allApodsState.asStateFlow()
+
     var currentSortTag = NO_SORT_TAG
 
     private var allApods = SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>()
@@ -29,11 +40,6 @@ class ApodsViewModel @Inject constructor(
 
     private val favouriteApods = SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>()
 
-    fun allApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
-
-        return allApods
-
-    }
 
     fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
 
@@ -78,27 +84,29 @@ class ApodsViewModel @Inject constructor(
 
         if(isApodsAvailable()) return
 
-        allApods.value = Resource.loading()
+        viewModelScope.launch {
 
-        viewModelScope.launch(Dispatchers.Main) {
+            planetaryRepo.getApodsUiState().collect { state ->
 
-            val favouriteApodsFromDb : MutableList<FavouriteAstronomyPictureEnt> = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                when (state.status) {
 
-                planetaryRepo.getFavouritePicturesFromDB()
+                    Resource.Status.EMPTY -> {
 
+                        _allApodsState.value = Resource.loading()
+
+                    }
+
+                    Resource.Status.SUCCESS -> {
+
+                        _allApodsState.value = Resource.success(state.data)
+
+                    }
+
+                }
             }
-
-            val apodsFromDb : List<AstronomyPictureEnt> = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
-
-                planetaryRepo.getPicturesFromDB()
-
-            }
-
-            favouriteApods.value = Resource.success(favouriteApodsFromDb)
-
-            allApods.value = Resource.success(apodsFromDb)
-
         }
+
+        //favouriteApods.value = Resource.success(favouriteApodsFromDb)
 
     }
 

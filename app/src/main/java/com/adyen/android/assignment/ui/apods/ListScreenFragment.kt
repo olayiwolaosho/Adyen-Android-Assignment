@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.SharedPreferenceManager
@@ -18,6 +19,7 @@ import com.adyen.android.assignment.databinding.FragmentListScreenBinding
 import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -70,9 +72,20 @@ class ListScreenFragment : Fragment(),
 
     private fun initObservers() {
 
+        lifecycleScope.launchWhenStarted {
+
+            viewModel.allApodsState.collectLatest { resource ->
+
+                allApodsObserver(resource)
+
+            }
+
+        }
+
+
         viewModel.filteredApods().observe(viewLifecycleOwner,filteredApodsObserver())
 
-        viewModel.allApods().observe(viewLifecycleOwner,allApodsObserver())
+
 
         viewModel.favouriteApods().observe(viewLifecycleOwner,favouriteApodsObserver())
 
@@ -107,7 +120,7 @@ class ListScreenFragment : Fragment(),
         }
     }
 
-    private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
+    /*private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
 
         return Observer { result ->
 
@@ -148,6 +161,48 @@ class ListScreenFragment : Fragment(),
                     dialog.showOnFullScreen(R.layout.network_error_screen,this)
 
                 }
+
+            }
+
+        }
+
+    }*/
+
+    private fun allApodsObserver(result : Resource<List<AstronomyPictureEnt>>) {
+
+        dialog.dismiss()
+
+        when(result.status){
+
+            Resource.Status.LOADING ->{
+
+                dialog.showOnFullScreen(R.layout.loading_screen,this)
+
+            }
+
+            Resource.Status.SUCCESS ->{
+
+                if(prefManager.getStringItem(DATE_TODAY) != LocalDate.now().toString()){
+
+                    prefManager.saveItem(DATE_TODAY,LocalDate.now().toString())
+
+                }
+
+                val astronomyPictures = result.data!!
+
+                adapter.submitList(astronomyPictures)
+
+            }
+
+            Resource.Status.ERROR -> {
+
+                dialog.showOnFullScreen(R.layout.error_screen,this)
+
+            }
+
+            Resource.Status.NO_NETWORK -> {
+
+                dialog.showOnFullScreen(R.layout.network_error_screen,this)
 
             }
 

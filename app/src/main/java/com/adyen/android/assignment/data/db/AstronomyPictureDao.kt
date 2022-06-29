@@ -4,25 +4,26 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AstronomyPictureDao {
 
     @Query("SELECT * FROM AstronomyPictureEnt")
-    fun getAll(): List<AstronomyPictureEnt>
+    fun getAll(): Flow<List<AstronomyPictureEnt>>
 
     @Query("SELECT * FROM FavouriteAstronomyPictureEnt")
-    fun getAllFavourites(): MutableList<FavouriteAstronomyPictureEnt>
+    fun getAllFavourites(): Flow<MutableList<FavouriteAstronomyPictureEnt>>
 
     @Insert
-    fun insert(picture: FavouriteAstronomyPictureEnt)
+    suspend fun insert(picture: FavouriteAstronomyPictureEnt)
 
     @Insert
-    fun insertAll(vararg pictures: AstronomyPictureEnt)
+    suspend fun insertAll(vararg pictures: AstronomyPictureEnt)
 
     @Query("DELETE FROM AstronomyPictureEnt")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Delete
-    fun deleteFavourite(picture: FavouriteAstronomyPictureEnt)
+    suspend fun deleteFavourite(picture: FavouriteAstronomyPictureEnt)
 }
