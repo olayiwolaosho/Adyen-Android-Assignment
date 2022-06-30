@@ -37,9 +37,6 @@ class ListScreenFragment : Fragment(),
     private val viewModel: ApodsViewModel by activityViewModels()
 
     @Inject
-    lateinit var prefManager : SharedPreferenceManager
-
-    @Inject
     lateinit var dialog: ShowCustomDialog
 
     override fun onCreateView(
@@ -104,16 +101,8 @@ class ListScreenFragment : Fragment(),
 
     private fun getApods() {
 
-        //if(prefManager.getStringItem(DATE_TODAY) == LocalDate.now().toString()){
+        viewModel.getApods()
 
-          //  viewModel.getApodsFromDb()
-
-        //}
-        //else{
-
-            viewModel.getApods()
-
-        //}
     }
 
 
@@ -130,12 +119,6 @@ class ListScreenFragment : Fragment(),
             }
 
             Resource.Status.SUCCESS ->{
-
-                if(prefManager.getStringItem(DATE_TODAY) != LocalDate.now().toString()){
-
-                    prefManager.saveItem(DATE_TODAY,LocalDate.now().toString())
-
-                }
 
                 val astronomyPictures = result.data!!
 

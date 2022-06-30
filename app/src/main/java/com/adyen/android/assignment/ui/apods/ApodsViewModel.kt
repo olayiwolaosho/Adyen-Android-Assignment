@@ -31,12 +31,6 @@ class ApodsViewModel @Inject constructor(
 
     var currentSortTag = NO_SORT_TAG
 
-    /*fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
-
-        return filteredApods
-
-    }*/
-
     fun favouriteApods() : SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>{
 
         return favouriteApods
@@ -49,7 +43,7 @@ class ApodsViewModel @Inject constructor(
         ///getFavouriteApods()
 
         //check if we have data in our liveEvents so we that instead of calling api or db
-        if(filterApods() || getAllApods()){
+        if(getAllApods()){
             return true
         }
 
@@ -66,50 +60,6 @@ class ApodsViewModel @Inject constructor(
             getApodsFromService()
 
         }
-    }
-
-    fun getApodsFromDb(){
-
-        if(isApodsAvailable()) return
-
-        viewModelScope.launch {
-
-            planetaryRepo.getApodsUiState().collect { state ->
-
-                when (state.status) {
-
-                    Resource.Status.LOADING -> {
-
-                        _allApodsState.value = Resource.loading()
-
-                    }
-
-                    Resource.Status.SUCCESS -> {
-
-                        _allApodsState.value = Resource.success(state.data)
-
-                    }
-
-                }
-            }
-        }
-
-        //favouriteApods.value = Resource.success(favouriteApodsFromDb)
-
-    }
-
-    fun filterApods() : Boolean{
-
-        if(currentSortTag != NO_SORT_TAG){
-
-            //_filteredApodsState.value = Resource.success(filteredApods.value?.data)
-
-            return true
-
-        }
-
-        return false
-
     }
 
     fun getFavouriteApods(){
@@ -136,7 +86,7 @@ class ApodsViewModel @Inject constructor(
 
     suspend fun getApodsFromService(){
         //make api call
-        planetaryRepo.getPictures().collect { state ->
+        planetaryRepo.getAllPictures().collect { state ->
 
             when (state.status) {
 

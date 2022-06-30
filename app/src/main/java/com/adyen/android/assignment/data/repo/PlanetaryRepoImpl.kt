@@ -2,12 +2,10 @@ package com.adyen.android.assignment.data.repo
 
 import android.provider.SyncStateContract
 import androidx.lifecycle.viewModelScope
+import com.adyen.android.assignment.SharedPreferenceManager
 import com.adyen.android.assignment.api.PlanetaryService
 import com.adyen.android.assignment.api.model.AstronomyPicture
-import com.adyen.android.assignment.data.ADD_FAVOURITE
-import com.adyen.android.assignment.data.IMAGE
-import com.adyen.android.assignment.data.REMOVE_FAVOURITE
-import com.adyen.android.assignment.data.Resource
+import com.adyen.android.assignment.data.*
 import com.adyen.android.assignment.data.db.AstronomyPictureDao
 import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
@@ -18,27 +16,53 @@ import com.adyen.android.assignment.ui.apods.ApodsViewModel
 import com.adyen.android.assignment.util.exception.NoConnectivityException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
 import retrofit2.Response
 import java.io.IOException
+import java.time.LocalDate
 import javax.inject.Inject
 
 class PlanetaryRepoImpl @Inject constructor(
     private val planetaryService : PlanetaryService,
-    private val planetaryDbRepo: PlanetaryDbRepo
+    private val planetaryDbRepo: PlanetaryDbRepo,
+    var prefManager : SharedPreferenceManager
 ) : PlanetaryRepo {
 
-    override suspend fun getPictures(): Flow<Resource<List<AstronomyPictureEnt>>> {
+    override suspend fun getAllPictures(): Flow<Resource<List<AstronomyPictureEnt>>> {
 
         return flow<Resource<List<AstronomyPictureEnt>>> {
 
-            emit(Resource.loading())
+            if(prefManager.getStringItem(DATE_TODAY) == LocalDate.now().toString()){
+
+                getApodsFromDB().collect(){ resource ->
+
+                    emit(resource)
+
+                }
+
+            }
+            else{
+
+                getPictures().collect(){ resource ->
+
+                    emit(resource)
+
+                }
+
+            }
+
+        }.flowOn(Dispatchers.IO)
+
+    }
+
+    private suspend fun getPictures(): Flow<Resource<List<AstronomyPictureEnt>>> {
+
+        return channelFlow<Resource<List<AstronomyPictureEnt>>> {
+
+            send(Resource.loading())
 
             try {
 
@@ -58,7 +82,7 @@ class PlanetaryRepoImpl @Inject constructor(
 
                     responseEnt?.let { allImages ->
 
-                        emit(Resource.success(allImages))
+                        send(Resource.success(allImages))
 
                         //remove appPictures from db before adding new data
                         planetaryDbRepo.removeAllPictureFromDB()
@@ -70,38 +94,44 @@ class PlanetaryRepoImpl @Inject constructor(
                         //todo : favourites should have its own function and observer
                         //planetaryDbRepo.getFavouritePicturesFromDB()
 
+                        if(prefManager.getStringItem(DATE_TODAY) != LocalDate.now().toString()){
+
+                            prefManager.saveItem(DATE_TODAY,LocalDate.now().toString())
+
+                        }
+
                     }
 
                 }
 
             } catch (e: NoConnectivityException) {
 
-                emit(Resource.noNetwork())
+                send(Resource.noNetwork())
 
             }
             catch (e: IOException) {
 
-                emit(Resource.error(""))
+                send(Resource.error(""))
 
             }
 
-        }.flowOn(Dispatchers.IO)
+        }
 
     }
 
-    override suspend fun getApodsUiState(): Flow<Resource<List<AstronomyPictureEnt>>> {
+    private suspend fun getApodsFromDB(): Flow<Resource<List<AstronomyPictureEnt>>> {
 
-        return flow {
+        return channelFlow {
 
-            emit(Resource.loading())
+            send(Resource.loading())
 
             planetaryDbRepo.getPicturesFromDB().collectLatest { latest ->
 
-                emit(Resource.success(latest))
+                send(Resource.success(latest))
 
             }
 
-        }.flowOn(Dispatchers.IO)
+        }
 
     }
 

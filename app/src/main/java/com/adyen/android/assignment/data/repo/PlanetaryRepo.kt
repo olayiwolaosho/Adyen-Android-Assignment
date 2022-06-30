@@ -10,9 +10,7 @@ import retrofit2.Response
 
 interface PlanetaryRepo {
 
-    suspend fun getPictures() : Flow<Resource<List<AstronomyPictureEnt>>>
-
-    suspend fun getApodsUiState() : Flow<Resource<List<AstronomyPictureEnt>>>
+    suspend fun getAllPictures() : Flow<Resource<List<AstronomyPictureEnt>>>
 
     suspend fun editFavourite(favourite : FavouriteAstronomyPictureEnt) : Flow<Resource<String>>
 
