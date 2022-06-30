@@ -2,17 +2,17 @@ package com.adyen.android.assignment.ui.apods
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.util.DisplayMetrics
+import android.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.adyen.android.assignment.data.DATE_SORT_TAG
 import com.adyen.android.assignment.data.NO_SORT_TAG
 import com.adyen.android.assignment.data.TITLE_SORT_TAG
+import com.adyen.android.assignment.data.extensions.setWidthPercent
 import com.adyen.android.assignment.databinding.FragmentReorderBinding
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class ReorderFragment : DialogFragment() {
@@ -20,14 +20,6 @@ class ReorderFragment : DialogFragment() {
     private lateinit var binding: FragmentReorderBinding
 
     private val viewModel: ApodsViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(
-            STYLE_NO_TITLE,
-            android.R.style.Theme_DeviceDefault_Dialog_MinWidth
-        )
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +44,8 @@ class ReorderFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setWidthPercent(90)
 
         initListeners()
 
