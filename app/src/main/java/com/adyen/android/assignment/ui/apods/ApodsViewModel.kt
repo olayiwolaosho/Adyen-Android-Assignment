@@ -2,23 +2,16 @@ package com.adyen.android.assignment.ui.apods
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.adyen.android.assignment.api.model.AstronomyPicture
 import com.adyen.android.assignment.data.*
 import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
-import com.adyen.android.assignment.data.extensions.toAstronomyPictureEnt
 import com.adyen.android.assignment.data.extensions.toFavouritePictureEnt
 import com.adyen.android.assignment.data.repo.PlanetaryRepo
-import com.adyen.android.assignment.ui.UiState
-import com.adyen.android.assignment.util.exception.NoConnectivityException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import retrofit2.Response
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,20 +25,17 @@ class ApodsViewModel @Inject constructor(
     // The UI collects from this StateFlow to get its state updates
     val allApodsState: StateFlow<Resource<List<AstronomyPictureEnt>>> = _allApodsState.asStateFlow()
 
-    var currentSortTag = NO_SORT_TAG
-
-    private var allApods = SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>()
-
-    private val filteredApods = SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>()
+    private var _allApods : List<AstronomyPictureEnt>? = listOf()
 
     private val favouriteApods = SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>()
 
+    var currentSortTag = NO_SORT_TAG
 
-    fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
+    /*fun filteredApods() : SingleLiveEvent<Resource<List<AstronomyPictureEnt>>>{
 
         return filteredApods
 
-    }
+    }*/
 
     fun favouriteApods() : SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>{
 
@@ -70,8 +60,6 @@ class ApodsViewModel @Inject constructor(
     fun getApods(){
 
         if(isApodsAvailable()) return
-
-        allApods.value = Resource.loading()
 
         viewModelScope.launch(Dispatchers.Main) {
 
@@ -114,7 +102,7 @@ class ApodsViewModel @Inject constructor(
 
         if(currentSortTag != NO_SORT_TAG){
 
-            filteredApods.value = Resource.success(filteredApods.value?.data)
+            //_filteredApodsState.value = Resource.success(filteredApods.value?.data)
 
             return true
 
@@ -176,7 +164,9 @@ class ApodsViewModel @Inject constructor(
 
                     //allApods.value = Resource.success(imagesFromDb)
 
-                    _allApodsState.value = Resource.success(state.data)
+                    _allApods = state.data
+
+                    _allApodsState.value = Resource.success(_allApods)
 
                 }
 
@@ -192,18 +182,18 @@ class ApodsViewModel @Inject constructor(
 
             TITLE_SORT_TAG -> {
 
-                val sortByTitle = allApods.value?.data
+                val sortByTitle = _allApodsState.value.data
 
-                filteredApods.value = Resource.success(sortByTitle?.sortedBy { it.title })
+                _allApodsState.value = Resource.success(sortByTitle?.sortedBy { it.title })
 
                 currentSortTag = TITLE_SORT_TAG
             }
 
             DATE_SORT_TAG -> {
 
-                val sortByDate = allApods.value?.data
+                val sortByDate = _allApodsState.value.data
 
-                filteredApods.value = Resource.success(sortByDate?.sortedByDescending { it.date })
+                _allApodsState.value = Resource.success(sortByDate?.sortedByDescending { it.date })
 
                 currentSortTag = DATE_SORT_TAG
             }
@@ -216,7 +206,7 @@ class ApodsViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.Main) {
 
-            val favouriteData = allApods.value?.data?.get(astronomyPictureId)
+            val favouriteData = _allApodsState.value.data?.get(astronomyPictureId)
 
             favouriteData?.toFavouritePictureEnt()?.let { favourite ->
 
@@ -261,7 +251,7 @@ class ApodsViewModel @Inject constructor(
 
         currentSortTag = NO_SORT_TAG
 
-        allApods.value = Resource.success(allApods.value?.data)
+        _allApodsState.value = Resource.success(_allApods)
 
     }
 

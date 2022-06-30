@@ -19,6 +19,7 @@ import com.adyen.android.assignment.databinding.FragmentListScreenBinding
 import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 import javax.inject.Inject
@@ -81,11 +82,6 @@ class ListScreenFragment : Fragment(),
             }
 
         }
-
-
-        viewModel.filteredApods().observe(viewLifecycleOwner,filteredApodsObserver())
-
-
 
         viewModel.favouriteApods().observe(viewLifecycleOwner,favouriteApodsObserver())
 
@@ -156,46 +152,6 @@ class ListScreenFragment : Fragment(),
             Resource.Status.NO_NETWORK -> {
 
                 dialog.showOnFullScreen(R.layout.network_error_screen,this)
-
-            }
-
-        }
-
-    }
-
-    private fun filteredApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
-
-        return Observer { result ->
-
-            when(result.status){
-
-                Resource.Status.LOADING ->{
-
-                    dialog.showOnFullScreen(R.layout.loading_screen,this)
-
-                }
-
-                Resource.Status.SUCCESS ->{
-
-                    val astronomyPictures = result.data!!
-
-                    adapter.submitList(astronomyPictures)
-
-                    return@Observer
-
-                }
-
-                Resource.Status.ERROR -> {
-
-                    dialog.showOnFullScreen(R.layout.error_screen,this)
-
-                }
-
-                Resource.Status.NO_NETWORK -> {
-
-                    dialog.showOnFullScreen(R.layout.network_error_screen,this)
-
-                }
 
             }
 
