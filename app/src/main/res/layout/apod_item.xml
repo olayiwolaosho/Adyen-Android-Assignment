@@ -14,38 +14,49 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:onClick="@{clickListener}">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imageView_planet"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/roundedView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_margin="10dp"
-            app:imageFromUrl="@{apods.url}"
+            app:cardCornerRadius="50dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.04"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-            app:srcCompat="@mipmap/ic_launcher" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView_planet"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:imageFromUrl="@{apods.url}"
+                android:scaleType="centerCrop"
+                app:srcCompat="@mipmap/ic_launcher"/>
+
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/text_notificationMessage"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="15dp"
             android:layout_marginEnd="10dp"
-            android:fontFamily="@font/roboto_regular"
+            android:fontFamily="@font/roboto"
+            android:textColor="@android:color/white"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:maxLines="2"
+            android:maxLines="1"
             tools:text="Shooting Star"
             android:text="@{apods.title}"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageView_planet"
+            app:layout_constraintStart_toEndOf="@+id/roundedView"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
@@ -54,6 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/white"
             android:textSize="11sp"
             app:dateFormat="@{apods.date.toString()}"
             app:layout_constraintStart_toStartOf="@+id/text_notificationMessage"

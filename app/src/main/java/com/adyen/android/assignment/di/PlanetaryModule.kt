@@ -1,6 +1,8 @@
 package com.adyen.android.assignment.di
 
 import com.adyen.android.assignment.api.PlanetaryService
+import com.adyen.android.assignment.data.repo.PlanetaryDbRepo
+import com.adyen.android.assignment.data.repo.PlanetaryDbRepoImpl
 import com.adyen.android.assignment.data.repo.PlanetaryRepo
 import com.adyen.android.assignment.data.repo.PlanetaryRepoImpl
 import dagger.Module
@@ -16,14 +18,20 @@ class PlanetaryModule {
 
     @Provides
     @Singleton
-    fun providesAuthService(retrofit: Retrofit): PlanetaryService {
+    fun providesPlanetaryService(retrofit: Retrofit): PlanetaryService {
         return retrofit.create(PlanetaryService::class.java)
     }
 
     @Provides
     @Singleton
-    fun providesAuthRepo(planetaryRepoImpl: PlanetaryRepoImpl): PlanetaryRepo {
+    fun providesPlanetaryRepo(planetaryRepoImpl: PlanetaryRepoImpl): PlanetaryRepo {
         return planetaryRepoImpl
+    }
+
+    @Provides
+    @Singleton
+    fun providesPlanetaryDBRepo(planetaryDbRepoImpl: PlanetaryDbRepoImpl): PlanetaryDbRepo {
+        return planetaryDbRepoImpl
     }
 
 }

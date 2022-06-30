@@ -108,65 +108,18 @@ class ListScreenFragment : Fragment(),
 
     private fun getApods() {
 
-        if(prefManager.getStringItem(DATE_TODAY) == LocalDate.now().toString()){
+        //if(prefManager.getStringItem(DATE_TODAY) == LocalDate.now().toString()){
 
-            viewModel.getApodsFromDb()
+          //  viewModel.getApodsFromDb()
 
-        }
-        else{
+        //}
+        //else{
 
             viewModel.getApods()
 
-        }
+        //}
     }
 
-    /*private fun allApodsObserver(): Observer<Resource<List<AstronomyPictureEnt>>> {
-
-        return Observer { result ->
-
-            dialog.dismiss()
-
-            when(result.status){
-
-                Resource.Status.LOADING ->{
-
-                    dialog.showOnFullScreen(R.layout.loading_screen,this)
-
-                }
-
-                Resource.Status.SUCCESS ->{
-
-                    if(prefManager.getStringItem(DATE_TODAY) != LocalDate.now().toString()){
-
-                        prefManager.saveItem(DATE_TODAY,LocalDate.now().toString())
-
-                    }
-
-                    val astronomyPictures = result.data!!
-
-                    adapter.submitList(astronomyPictures)
-
-                    return@Observer
-
-                }
-
-                Resource.Status.ERROR -> {
-
-                    dialog.showOnFullScreen(R.layout.error_screen,this)
-
-                }
-
-                Resource.Status.NO_NETWORK -> {
-
-                    dialog.showOnFullScreen(R.layout.network_error_screen,this)
-
-                }
-
-            }
-
-        }
-
-    }*/
 
     private fun allApodsObserver(result : Resource<List<AstronomyPictureEnt>>) {
 

@@ -49,7 +49,6 @@ class ApodsDetailFragment : Fragment() {
     }
 
     private fun initViews() {
-
         //use the list category to know if clicked event happened in favourite or main list
         when(args.listCategory){
 

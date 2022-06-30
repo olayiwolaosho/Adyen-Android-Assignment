@@ -56,7 +56,7 @@ class ApodsViewModel @Inject constructor(
     fun isApodsAvailable() : Boolean{
 
         //get all favourite apods
-        getFavouriteApods()
+        ///getFavouriteApods()
 
         //check if we have data in our liveEvents so we that instead of calling api or db
         if(filterApods() || getAllApods()){
@@ -136,9 +136,7 @@ class ApodsViewModel @Inject constructor(
 
     fun getAllApods() : Boolean{
 
-        if(allApods.value?.data != null){
-
-            allApods.value = Resource.success(allApods.value?.data)
+        if(_allApodsState.value.data != null){
 
             return true
 
