@@ -76,7 +76,7 @@ class ApodsDetailFragment : Fragment() {
 
             FAVOURITE_LIST -> {
 
-                viewModel.favouriteApods().value?.data?.let { favApodData ->
+                viewModel.favouriteApodsState.value.data?.let { favApodData ->
 
                     faveAstronomyData = favApodData.first {  it.id == args.astronomyId }
 

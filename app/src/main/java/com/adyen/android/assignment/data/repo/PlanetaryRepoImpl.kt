@@ -142,16 +142,16 @@ class PlanetaryRepoImpl @Inject constructor(
 
             if(favourite.favourite){
 
-                planetaryDbRepo.addFavouritePictureToDB(favourite)
-
                 emit(Resource.success(ADD_FAVOURITE))
+
+                planetaryDbRepo.addFavouritePictureToDB(favourite)
 
             }
             else{
 
-                planetaryDbRepo.removeFavouritePictureFromDB(favourite)
-
                 emit(Resource.success(REMOVE_FAVOURITE))
+
+                planetaryDbRepo.removeFavouritePictureFromDB(favourite)
 
             }
 

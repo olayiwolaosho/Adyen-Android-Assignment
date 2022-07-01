@@ -27,15 +27,21 @@ class ApodsViewModel @Inject constructor(
 
     private var _allApods : List<AstronomyPictureEnt>? = listOf()
 
-    private val favouriteApods = SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>()
+    //private val favouriteApods = SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>()
+
+    // Backing property to avoid state updates from other classes
+    private val _favouriteApodsState = MutableStateFlow<Resource<MutableList<FavouriteAstronomyPictureEnt>>>(Resource.empty())
+
+    // The UI collects from this StateFlow to get its state updates
+    val favouriteApodsState: StateFlow<Resource<MutableList<FavouriteAstronomyPictureEnt>>> = _favouriteApodsState.asStateFlow()
 
     var currentSortTag = NO_SORT_TAG
 
-    fun favouriteApods() : SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>{
+    /*fun favouriteApods() : SingleLiveEvent<Resource<MutableList<FavouriteAstronomyPictureEnt>>>{
 
         return favouriteApods
 
-    }
+    }*/
 
     fun isApodsAvailable() : Boolean{
 
@@ -64,9 +70,9 @@ class ApodsViewModel @Inject constructor(
 
     fun getFavouriteApods(){
 
-        if(favouriteApods.value?.data != null){
+        if(_favouriteApodsState.value.data != null){
 
-            favouriteApods.value = Resource.success(favouriteApods.value?.data)
+            _favouriteApodsState.value = Resource.success(_favouriteApodsState.value?.data)
 
         }
 
@@ -156,10 +162,13 @@ class ApodsViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.Main) {
 
-            val favouriteData = _allApodsState.value.data?.get(astronomyPictureId)
+            val favouriteData = _allApodsState.value.data?.first {
+
+                it.id == astronomyPictureId
+
+            }
 
             favouriteData?.toFavouritePictureEnt()?.let { favourite ->
-
 
                 planetaryRepo.editFavourite(favourite).collect{ response ->
 
@@ -169,21 +178,23 @@ class ApodsViewModel @Inject constructor(
 
                             if(response.data == ADD_FAVOURITE){
 
-                                favouriteApods.value?.data?.add(FIRST_INDEX,favourite)
+                                _favouriteApodsState.value.data?.add(FIRST_INDEX,favourite)
+
+                                _favouriteApodsState.value = Resource.success(_favouriteApodsState.value.data)
 
                             }
                             else{
 
-                                favouriteApods.value?.data?.remove(favourite)
+                                _favouriteApodsState.value.data?.remove(favourite)
 
+
+                                _favouriteApodsState.value = Resource.success(_favouriteApodsState.value.data)
                             }
-
-                            favouriteApods.value = Resource.success(favouriteApods.value?.data)
 
                         }
                         else -> {
 
-                            favouriteApods.value = Resource.success(favouriteApods.value?.data)
+                            _favouriteApodsState.value = Resource.success(_favouriteApodsState.value.data)
 
                         }
 

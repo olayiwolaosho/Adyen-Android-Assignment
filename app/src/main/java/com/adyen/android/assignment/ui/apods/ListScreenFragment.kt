@@ -10,8 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.adyen.android.assignment.R
-import com.adyen.android.assignment.SharedPreferenceManager
-import com.adyen.android.assignment.data.DATE_TODAY
 import com.adyen.android.assignment.data.Resource
 import com.adyen.android.assignment.data.db.AstronomyPictureEnt
 import com.adyen.android.assignment.data.db.FavouriteAstronomyPictureEnt
@@ -19,9 +17,8 @@ import com.adyen.android.assignment.databinding.FragmentListScreenBinding
 import com.adyen.android.assignment.ui.callbacks.RefreshListener
 import com.adyen.android.assignment.ui.dialog.ShowCustomDialog
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
-import java.time.LocalDate
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -72,15 +69,23 @@ class ListScreenFragment : Fragment(),
 
         lifecycleScope.launchWhenStarted {
 
-            viewModel.allApodsState.collectLatest { resource ->
+            withContext(coroutineContext) {
 
-                allApodsObserver(resource)
+                viewModel.allApodsState.collectLatest { resource ->
+
+                    allApodsObserver(resource)
+
+                }
+
+            }
+
+            viewModel.favouriteApodsState.collectLatest { resource ->
+
+                favouriteApodsObserver(resource)
 
             }
 
         }
-
-        viewModel.favouriteApods().observe(viewLifecycleOwner,favouriteApodsObserver())
 
     }
 
@@ -142,46 +147,39 @@ class ListScreenFragment : Fragment(),
 
     }
 
-    private fun favouriteApodsObserver(): Observer<Resource<MutableList<FavouriteAstronomyPictureEnt>>> {
+    private fun favouriteApodsObserver(result : Resource<MutableList<FavouriteAstronomyPictureEnt>>) {
 
-        return Observer { result ->
+        when(result.status){
 
-            when(result.status){
+            Resource.Status.LOADING ->{
 
-                Resource.Status.LOADING ->{
+            }
 
-                }
+            Resource.Status.SUCCESS ->{
 
-                Resource.Status.SUCCESS ->{
+                val favouriteAstronomyPictures = result.data!!
 
-                    val favouriteAstronomyPictures = result.data!!
+                if(favouriteAstronomyPictures.isEmpty()){
 
-                    if(favouriteAstronomyPictures.isEmpty()){
+                    binding.textViewFavourite.visibility = View.GONE
 
-                        binding.textViewFavourite.visibility = View.GONE
-
-                        binding.recyclerViewFavouriteList.visibility = View.GONE
-
-                        return@Observer
-                    }
-
-                    favouritesAdapter.submitList(favouriteAstronomyPictures)
-
-                    binding.textViewFavourite.visibility = View.VISIBLE
-
-                    binding.recyclerViewFavouriteList.visibility = View.VISIBLE
-
-                    return@Observer
+                    binding.recyclerViewFavouriteList.visibility = View.GONE
 
                 }
 
-                Resource.Status.ERROR -> {
+                favouritesAdapter.submitList(favouriteAstronomyPictures)
 
-                }
+                binding.textViewFavourite.visibility = View.VISIBLE
 
-                Resource.Status.NO_NETWORK -> {
+                binding.recyclerViewFavouriteList.visibility = View.VISIBLE
 
-                }
+            }
+
+            Resource.Status.ERROR -> {
+
+            }
+
+            Resource.Status.NO_NETWORK -> {
 
             }
 
